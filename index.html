@@ -35,7 +35,12 @@
               --text-lt:#b09a78;
             }
             *{margin:0;padding:0;box-sizing:border-box}
-            html,body{width:100%;overflow-x:hidden;scroll-behavior:smooth}
+            html,body{width:100%;overflow-x:hidden;
+   scroll-behavior:auto;
+}
+.reveal{
+   will-change: transform, opacity;
+}
             body{font-family:'Amiri',serif;background:var(--cream);color:var(--text)}
             .petal{position:fixed;top:-20px;pointer-events:none;font-size:13px;opacity:0;z-index:1;animation:petalFall linear infinite}
             @keyframes petalFall{0%{transform:translateY(0) rotate(0) translateX(0);opacity:0}8%{opacity:.4}92%{opacity:.15}100%{transform:translateY(102vh) rotate(480deg) translateX(30px);opacity:0}}
@@ -531,148 +536,303 @@
 
     <div class="toast" id="toast"></div>
 
-   <script>
+  <script>
     /* ══ PETALS ══ */
     (function(){
-        const items=['🌸','🌷','🌹'];
-        const fragment = document.createDocumentFragment(); // استخدام Fragment لتحسين الأداء
-        for(let i=0;i<18;i++){
-            const el=document.createElement('div');
-            el.className='petal';
-            el.textContent=items[i%3];
-            el.style.cssText=`left:${Math.random()*100}%;font-size:${9+Math.random()*9}px;animation-duration:${11+Math.random()*12}s;animation-delay:${Math.random()*16}s`;
-            fragment.appendChild(el);
+
+        const items = ['🌸','🌷','🌹'];
+
+        // أخف للموبايل
+        const count = window.innerWidth < 768 ? 6 : 18;
+
+        for(let i = 0; i < count; i++){
+
+            const el = document.createElement('div');
+
+            el.className = 'petal';
+
+            el.textContent = items[i % 3];
+
+            el.style.cssText = `
+                left:${Math.random()*100}%;
+                font-size:${9 + Math.random()*9}px;
+                animation-duration:${11 + Math.random()*12}s;
+                animation-delay:${Math.random()*16}s
+            `;
+
+            document.body.appendChild(el);
         }
-        document.body.appendChild(fragment);
+
     })();
 
     /* ══ COUNTDOWN ══ */
     function tick(){
-        const target = new Date('2026-06-20T19:00:00').getTime();
-        const now = Date.now(); // أسرع من new Date().getTime()
+
+        const target =
+            new Date('2026-06-20T19:00:00').getTime();
+
+        const now = new Date().getTime();
+
         const diff = target - now;
 
         if(diff < 0) return;
 
-        const pad = v => String(v).padStart(2,'0');
-        const d = pad(Math.floor(diff / 86400000));
-        const h = pad(Math.floor((diff % 86400000) / 3600000));
-        const m = pad(Math.floor((diff % 3600000) / 60000));
-        const s = pad(Math.floor((diff % 60000) / 1000));
+        const pad = v =>
+            String(v).padStart(2,'0');
 
-        const els = {'wlD':d, 'wlH':h, 'wlM':m, 'wlS':s};
-        for(let id in els) {
-            const el = document.getElementById(id);
-            if(el && el.textContent !== els[id]) el.textContent = els[id]; // تحديث فقط لو القيمة اتغيرت
+        const d = pad(
+            Math.floor(diff / (1000 * 60 * 60 * 24))
+        );
+
+        const h = pad(
+            Math.floor(
+                (diff % (1000 * 60 * 60 * 24))
+                / (1000 * 60 * 60)
+            )
+        );
+
+        const m = pad(
+            Math.floor(
+                (diff % (1000 * 60 * 60))
+                / (1000 * 60)
+            )
+        );
+
+        const s = pad(
+            Math.floor(
+                (diff % (1000 * 60))
+                / 1000
+            )
+        );
+
+        const els = {
+            'wlD': d,
+            'wlH': h,
+            'wlM': m,
+            'wlS': s
+        };
+
+        for(let id in els){
+
+            const el =
+                document.getElementById(id);
+
+            if(el) el.textContent = els[id];
+
         }
     }
-    setInterval(tick, 1000); tick();
 
-  let autoScrolling = false;
-let autoScrollPaused = false;
-let scrollPos = window.pageYOffset;
-let lastTimestamp = 0;
+    setInterval(tick, 1000);
 
-function startAutoScroll() {
-    if (autoScrolling) return;
-    autoScrolling = true;
-    scrollPos = window.pageYOffset;
-    lastTimestamp = performance.now();
+    tick();
 
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    // السرعة بالبكسل في الثانية (80 للموبايل و 50 للكمبيوتر)
-    const pixelsPerSecond = isMobile ? 80 : 50; 
+    /* ══ AUTO SCROLL ══ */
 
-    function step(timestamp) {
-        if (!autoScrolling) return;
+    let autoScrolling = false;
 
-        // حساب الوقت المنقضي لضمان سلاسة الحركة مهما كانت سرعة الجهاز
-        const deltaTime = (timestamp - lastTimestamp) / 1000;
-        lastTimestamp = timestamp;
+    let autoScrollPaused = false;
 
-        if (!autoScrollPaused) {
-            scrollPos += pixelsPerSecond * deltaTime;
-            window.scrollTo(0, scrollPos);
+    let autoScrollInterval = null;
 
-            // توقف عند نهاية الصفحة
-            if (scrollPos >= (document.documentElement.scrollHeight - window.innerHeight - 5)) {
-                autoScrolling = false;
+    function startAutoScroll(){
+
+        if(autoScrolling) return;
+
+        autoScrolling = true;
+
+        autoScrollPaused = false;
+
+        const isMobile =
+            /Android|iPhone|iPad|iPod/i
+            .test(navigator.userAgent);
+
+        // سرعة أنعم للموبايل
+        const speed = isMobile ? 1.8 : 1.5;
+
+        autoScrollInterval = setInterval(() => {
+
+            if(!autoScrolling){
+
+                clearInterval(autoScrollInterval);
+
                 return;
             }
-        } else {
-            // مزامنة المكان لو المستخدم حرك الشاشة بنفسه
-            scrollPos = window.pageYOffset;
-        }
 
-        requestAnimationFrame(step);
+            if(!autoScrollPaused){
+
+                window.scrollBy({
+                    top: speed,
+                    behavior: "auto"
+                });
+
+            }
+
+            // نهاية الصفحة
+            if(
+                (window.innerHeight + window.scrollY)
+                >= document.body.scrollHeight - 5
+            ){
+
+                clearInterval(autoScrollInterval);
+
+                autoScrolling = false;
+
+            }
+
+        }, 16);
     }
-    requestAnimationFrame(step);
-}
 
-/* ══ PAUSE LOGIC ══ */
-let scrollTimeout;
-function pauseAutoScrollTemporarily() {
-    autoScrollPaused = true;
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-        scrollPos = window.pageYOffset;
-        lastTimestamp = performance.now(); // إعادة ضبط الوقت لبداية حركة ناعمة
-        autoScrollPaused = false;
-    }, 1500); 
-}
+    /* ══ PAUSE ON MANUAL SCROLL ══ */
 
-window.addEventListener("touchstart", pauseAutoScrollTemporarily, { passive: true });
-window.addEventListener("wheel", pauseAutoScrollTemporarily, { passive: true });
-window.addEventListener("mousedown", pauseAutoScrollTemporarily);
+    let scrollTimeout;
+
+    function pauseAutoScrollTemporarily(){
+
+        autoScrollPaused = true;
+
+        clearTimeout(scrollTimeout);
+
+        scrollTimeout = setTimeout(() => {
+
+            autoScrollPaused = false;
+
+        }, 1200);
+    }
+
+    /* دعم اللمس + الماوس + الويل */
+
+    window.addEventListener(
+        "touchstart",
+        pauseAutoScrollTemporarily,
+        { passive: true }
+    );
+
+    window.addEventListener(
+        "wheel",
+        pauseAutoScrollTemporarily,
+        { passive: true }
+    );
+
+    window.addEventListener(
+        "mousedown",
+        pauseAutoScrollTemporarily
+    );
 
     /* ══ ENVELOPE OPEN ══ */
+
     let envelopeOpened = false;
+
     function openEnvelope(){
-        if (envelopeOpened) return;
+
+        if(envelopeOpened) return;
+
         envelopeOpened = true;
 
-        const screen = document.getElementById('env-screen');
-        const video = document.getElementById('envVideo');
-        const music = document.getElementById('bgMusic');
-        const hero = document.getElementById("heroVideo");
-        const invitation = document.getElementById('invitation');
+        const screen =
+            document.getElementById('env-screen');
+
+        const video =
+            document.getElementById('envVideo');
+
+        const music =
+            document.getElementById('bgMusic');
+
+        const hero =
+            document.getElementById("heroVideo");
+
+        const invitation =
+            document.getElementById('invitation');
 
         screen.classList.add('tapped');
+
         video.play().catch(() => {});
 
-        video.onended = function () {
+        video.onended = function(){
+
             screen.classList.add('hide');
+
             invitation.classList.add('show');
-            
+
             music.volume = 0.5;
+
             music.play().catch(() => {});
-            
-            if(hero) hero.play().catch(() => {});
 
-            setTimeout(startAutoScroll, 1000);
+            if(hero){
 
-            document.querySelectorAll('.s-savedate .reveal').forEach(el => el.classList.add('visible'));
-            document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
+                hero.currentTime = 0;
+
+                hero.play().catch(() => {});
+
+            }
+
+            // أول سيكشن يظهر
+            document
+                .querySelectorAll(
+                    '.s-savedate .reveal'
+                )
+                .forEach(el =>
+                    el.classList.add('visible')
+                );
+
+            // الباقي
+            document
+                .querySelectorAll(
+                    '.reveal:not(.visible)'
+                )
+                .forEach(el =>
+                    observer.observe(el)
+                );
+
+            // يبدأ السكرول بعد ثواني
+            setTimeout(() => {
+
+                startAutoScroll();
+
+            }, 1000);
+
         };
     }
 
     /* ══ SCROLL REVEAL ══ */
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-            if(e.isIntersecting){
-                e.target.classList.add('visible');
-                observer.unobserve(e.target);
-            }
+
+    const observer =
+        new IntersectionObserver(entries => {
+
+            entries.forEach(e => {
+
+                if(e.isIntersecting){
+
+                    e.target
+                        .classList
+                        .add('visible');
+
+                    observer.unobserve(e.target);
+
+                }
+
+            });
+
+        }, {
+            threshold: 0.1
         });
-    }, {threshold: 0.1});
+
+    /* ══ TOAST ══ */
 
     function showToast(msg){
-        const t=document.getElementById('toast');
-        if(t){
-            t.textContent=msg;
-            t.classList.add('show');
-            setTimeout(()=>t.classList.remove('show'),3500);
-        }
+
+        const t =
+            document.getElementById('toast');
+
+        t.textContent = msg;
+
+        t.classList.add('show');
+
+        setTimeout(() => {
+
+            t.classList.remove('show');
+
+        }, 3500);
     }
+
 </script>
 </body></html>
