@@ -567,44 +567,41 @@
         }
     }
     setInterval(tick, 1000); tick();
-/* ══ AUTO SCROLL (ULTRA SMOOTH) ══ */
-let autoScrolling = false;
+
+  let autoScrolling = false;
 let autoScrollPaused = false;
+let scrollPos = window.pageYOffset;
 let lastTimestamp = 0;
-let currentScrollY = window.scrollY;
 
 function startAutoScroll() {
     if (autoScrolling) return;
     autoScrolling = true;
-    currentScrollY = window.scrollY;
+    scrollPos = window.pageYOffset;
     lastTimestamp = performance.now();
 
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    // السرعة بالبكسل في الثانية (مثلاً 60 بكسل في الثانية)
-    const speedPerSecond = isMobile ? 80 : 50; 
+    // السرعة بالبكسل في الثانية (80 للموبايل و 50 للكمبيوتر)
+    const pixelsPerSecond = isMobile ? 80 : 50; 
 
     function step(timestamp) {
         if (!autoScrolling) return;
 
-        // حساب الوقت المنقضي بين كل إطار والتاني
-        const deltaTime = (timestamp - lastTimestamp) / 1000; 
+        // حساب الوقت المنقضي لضمان سلاسة الحركة مهما كانت سرعة الجهاز
+        const deltaTime = (timestamp - lastTimestamp) / 1000;
         lastTimestamp = timestamp;
 
         if (!autoScrollPaused) {
-            // الحركة بتتحسب بناءً على الوقت مش الفريمات
-            currentScrollY += speedPerSecond * deltaTime;
-            window.scrollTo(0, currentScrollY);
-        } else {
-            // لو المستخدم بيحرك الصفحة يدوي، نحدث المكان عشان ميرجعش ينط لمكان قديم
-            currentScrollY = window.scrollY;
-        }
+            scrollPos += pixelsPerSecond * deltaTime;
+            window.scrollTo(0, scrollPos);
 
-        // التوقف عند نهاية الصفحة
-        const totalHeight = document.documentElement.scrollHeight;
-        const viewportHeight = window.innerHeight;
-        if (currentScrollY + viewportHeight >= totalHeight - 2) {
-            autoScrolling = false;
-            return;
+            // توقف عند نهاية الصفحة
+            if (scrollPos >= (document.documentElement.scrollHeight - window.innerHeight - 5)) {
+                autoScrolling = false;
+                return;
+            }
+        } else {
+            // مزامنة المكان لو المستخدم حرك الشاشة بنفسه
+            scrollPos = window.pageYOffset;
         }
 
         requestAnimationFrame(step);
@@ -612,19 +609,21 @@ function startAutoScroll() {
     requestAnimationFrame(step);
 }
 
-// تعديل بسيط في الـ Pause عشان يخلي التجربة ألطف
+/* ══ PAUSE LOGIC ══ */
+let scrollTimeout;
 function pauseAutoScrollTemporarily() {
     autoScrollPaused = true;
     clearTimeout(scrollTimeout);
     scrollTimeout = setTimeout(() => {
-        currentScrollY = window.scrollY;
-        lastTimestamp = performance.now(); // إعادة ضبط التوقيت
+        scrollPos = window.pageYOffset;
+        lastTimestamp = performance.now(); // إعادة ضبط الوقت لبداية حركة ناعمة
         autoScrollPaused = false;
-    }, 1500); // وقت الراحة بعد اللمس
+    }, 1500); 
 }
-    window.addEventListener("touchstart", pauseAutoScrollTemporarily, { passive: true });
-    window.addEventListener("wheel", pauseAutoScrollTemporarily, { passive: true });
-    window.addEventListener("mousedown", pauseAutoScrollTemporarily);
+
+window.addEventListener("touchstart", pauseAutoScrollTemporarily, { passive: true });
+window.addEventListener("wheel", pauseAutoScrollTemporarily, { passive: true });
+window.addEventListener("mousedown", pauseAutoScrollTemporarily);
 
     /* ══ ENVELOPE OPEN ══ */
     let envelopeOpened = false;
