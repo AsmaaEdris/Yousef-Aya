@@ -531,90 +531,136 @@
 
     <div class="toast" id="toast"></div>
 
-    <script>
-        /* ══ PETALS ══ */
-        (function(){
-            const items=['🌸','🌷','🌹'];
-            for(let i=0;i<18;i++){
-                const el=document.createElement('div');
-                el.className='petal';
-                el.textContent=items[i%3];
-                el.style.cssText=`left:${Math.random()*100}%;font-size:${9+Math.random()*9}px;animation-duration:${11+Math.random()*12}s;animation-delay:${Math.random()*16}s`;
-                document.body.appendChild(el);
+   <script>
+    /* ══ PETALS ══ */
+    (function(){
+        const items=['🌸','🌷','🌹'];
+        for(let i=0;i<18;i++){
+            const el=document.createElement('div');
+            el.className='petal';
+            el.textContent=items[i%3];
+            el.style.cssText=`left:${Math.random()*100}%;font-size:${9+Math.random()*9}px;animation-duration:${11+Math.random()*12}s;animation-delay:${Math.random()*16}s`;
+            document.body.appendChild(el);
+        }
+    })();
+
+    /* ══ COUNTDOWN ══ */
+    function tick(){
+        const target = new Date('2026-06-20T19:00:00').getTime();
+        const now = new Date().getTime();
+        const diff = target - now;
+
+        if(diff < 0) return;
+
+        const pad = v => String(v).padStart(2,'0');
+        const d = pad(Math.floor(diff / (1000 * 60 * 60 * 24)));
+        const h = pad(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+        const m = pad(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+        const s = pad(Math.floor((diff % (1000 * 60)) / 1000));
+
+        const els = {'wlD':d, 'wlH':h, 'wlM':m, 'wlS':s};
+        for(let id in els) {
+            const el = document.getElementById(id);
+            if(el) el.textContent = els[id];
+        }
+    }
+    setInterval(tick, 1000); tick();
+
+    /* ══ AUTO SCROLL ══ */
+    let autoScrolling = false;
+    let autoScrollPaused = false;
+
+    function startAutoScroll() {
+        if (autoScrolling) return;
+
+        autoScrolling = true;
+        autoScrollPaused = false;
+
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const speed = isMobile ? 3.5 : 2.2;
+
+        function step() {
+            if (!autoScrolling) return;
+
+            if (!autoScrollPaused) {
+                window.scrollBy(0, speed);
             }
-        })();
 
-        /* ══ COUNTDOWN ══ */
-        function tick(){
-            const target = new Date('2026-06-20T19:00:00').getTime();
-            const now = new Date().getTime();
-            const diff = target - now;
-
-            if(diff < 0) return;
-
-            const pad = v => String(v).padStart(2,'0');
-            const d = pad(Math.floor(diff / (1000 * 60 * 60 * 24)));
-            const h = pad(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
-            const m = pad(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
-            const s = pad(Math.floor((diff % (1000 * 60)) / 1000));
-
-            const els = {'wlD':d, 'wlH':h, 'wlM':m, 'wlS':s};
-            for(let id in els) {
-                const el = document.getElementById(id);
-                if(el) el.textContent = els[id];
+            if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 5) {
+                autoScrolling = false;
+                return;
             }
-        }
-        setInterval(tick, 1000); tick();
 
-        /* ══ ENVELOPE OPEN ══ */
-        let envelopeOpened = false;
-        function openEnvelope(){
-            if (envelopeOpened) return;
-            envelopeOpened = true;
-
-            const screen = document.getElementById('env-screen');
-            const video = document.getElementById('envVideo');
-            const music = document.getElementById('bgMusic');
-            const hero = document.getElementById("heroVideo");
-            const invitation = document.getElementById('invitation');
-
-            screen.classList.add('tapped');
-            video.play().catch(() => {});
-
-            video.onended = function () {
-                screen.classList.add('hide');
-                invitation.classList.add('show');
-                
-                music.volume = 0.5;
-                music.play().catch(() => {});
-                
-                if(hero) {
-                    hero.play().catch(() => {});
-                }
-
-                // Trigger reveals for the first section
-                document.querySelectorAll('.s-savedate .reveal').forEach(el => el.classList.add('visible'));
-                
-                // Start observing others
-                document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
-            };
+            requestAnimationFrame(step);
         }
 
-        /* ══ SCROLL REVEAL ══ */
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if(e.isIntersecting){
-                    e.target.classList.add('visible');
-                    observer.unobserve(e.target);
-                }
-            });
-        }, {threshold: 0.1});
+        requestAnimationFrame(step);
+    }
 
-        function showToast(msg){
-            const t=document.getElementById('toast');
-            t.textContent=msg;
-            t.classList.add('show');
-            setTimeout(()=>t.classList.remove('show'),3500);
-        }
-    </script>
+    let scrollTimeout;
+    function pauseAutoScrollTemporarily() {
+        autoScrollPaused = true;
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+            autoScrollPaused = false;
+        }, 1200);
+    }
+
+    window.addEventListener("touchstart", pauseAutoScrollTemporarily, { passive: true });
+    window.addEventListener("wheel", pauseAutoScrollTemporarily, { passive: true });
+    window.addEventListener("mousedown", pauseAutoScrollTemporarily);
+
+    /* ══ ENVELOPE OPEN ══ */
+    let envelopeOpened = false;
+    function openEnvelope(){
+        if (envelopeOpened) return;
+        envelopeOpened = true;
+
+        const screen = document.getElementById('env-screen');
+        const video = document.getElementById('envVideo');
+        const music = document.getElementById('bgMusic');
+        const hero = document.getElementById("heroVideo");
+        const invitation = document.getElementById('invitation');
+
+        screen.classList.add('tapped');
+        video.play().catch(() => {});
+
+        video.onended = function () {
+            screen.classList.add('hide');
+            invitation.classList.add('show');
+            
+            music.volume = 0.5;
+            music.play().catch(() => {});
+            
+            if(hero) {
+                hero.play().catch(() => {});
+            }
+
+            // استدعاء دالة السكرول التلقائي بعد فتح الظرف
+            setTimeout(() => {
+                startAutoScroll();
+            }, 1000);
+
+            document.querySelectorAll('.s-savedate .reveal').forEach(el => el.classList.add('visible'));
+            document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
+        };
+    }
+
+    /* ══ SCROLL REVEAL ══ */
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if(e.isIntersecting){
+                e.target.classList.add('visible');
+                observer.unobserve(e.target);
+            }
+        });
+    }, {threshold: 0.1});
+
+    function showToast(msg){
+        const t=document.getElementById('toast');
+        t.textContent=msg;
+        t.classList.add('show');
+        setTimeout(()=>t.classList.remove('show'),3500);
+    }
+</script>
 </body></html>
