@@ -346,7 +346,9 @@
     <div id="env-screen" onclick="openEnvelope()" class="">
         <div class="env-video-wrap">
             <div class="env-fallback-bg"></div>
-            <video id="envVideo" class="env-video" muted playsinline preload="auto">
+            <video id="envVideo" class="env-video" muted  playsinline
+    webkit-playsinline
+    preload="metadata">
                 <source src="imgs/evo.mp4" type="video/mp4">
             </video>
         </div>
@@ -757,14 +759,21 @@
 
             music.play().catch(() => {});
 
-            if(hero){
+     if(hero){
 
-                hero.currentTime = 0;
+    hero.muted = true;
 
-                hero.play().catch(() => {});
+    hero.playsInline = true;
 
-            }
+    hero.preload = "metadata";
 
+    hero.currentTime = 0;
+
+    hero.playbackRate = 0.95;
+
+    hero.play().catch(() => {});
+
+}
             // أول سيكشن يظهر
             document
                 .querySelectorAll(
