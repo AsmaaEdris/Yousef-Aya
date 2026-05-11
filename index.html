@@ -539,13 +539,14 @@
     <div class="toast" id="toast"></div>
 
   <script>
+
     /* ══ PETALS ══ */
     (function(){
 
         const items = ['🌸','🌷','🌹'];
 
         // أخف للموبايل
-        const count = window.innerWidth < 768 ? 6 : 18;
+        const count = window.innerWidth < 768 ? 5 : 18;
 
         for(let i = 0; i < count; i++){
 
@@ -559,7 +560,8 @@
                 left:${Math.random()*100}%;
                 font-size:${9 + Math.random()*9}px;
                 animation-duration:${11 + Math.random()*12}s;
-                animation-delay:${Math.random()*16}s
+                animation-delay:${Math.random()*16}s;
+                will-change: transform;
             `;
 
             document.body.appendChild(el);
@@ -568,6 +570,7 @@
     })();
 
     /* ══ COUNTDOWN ══ */
+
     function tick(){
 
         const target =
@@ -619,7 +622,9 @@
             const el =
                 document.getElementById(id);
 
-            if(el) el.textContent = els[id];
+            if(el){
+                el.textContent = els[id];
+            }
 
         }
     }
@@ -648,8 +653,8 @@
             /Android|iPhone|iPad|iPod/i
             .test(navigator.userAgent);
 
-        // سرعة أنعم للموبايل
-        const speed = isMobile ? 1.8 : 1.5;
+        // سرعة أنعم
+        const speed = isMobile ? 1.2 : 1.5;
 
         autoScrollInterval = setInterval(() => {
 
@@ -662,10 +667,7 @@
 
             if(!autoScrollPaused){
 
-                window.scrollBy({
-                    top: speed,
-                    behavior: "auto"
-                });
+                window.scrollBy(0, speed);
 
             }
 
@@ -681,7 +683,8 @@
 
             }
 
-        }, 16);
+        }, 20);
+
     }
 
     /* ══ PAUSE ON MANUAL SCROLL ══ */
@@ -699,9 +702,8 @@
             autoScrollPaused = false;
 
         }, 1200);
-    }
 
-    /* دعم اللمس + الماوس + الويل */
+    }
 
     window.addEventListener(
         "touchstart",
@@ -759,21 +761,38 @@
 
             music.play().catch(() => {});
 
-     if(hero){
+            // تشغيل الهيرو بهدوء
+            if(hero){
 
-    hero.muted = true;
+                hero.muted = true;
 
-    hero.playsInline = true;
+                hero.playsInline = true;
 
-    hero.preload = "metadata";
+                hero.preload = "metadata";
 
-    hero.currentTime = 0;
+                hero.setAttribute(
+                    "playsinline",
+                    ""
+                );
 
-    hero.playbackRate = 0.95;
+                hero.setAttribute(
+                    "webkit-playsinline",
+                    ""
+                );
 
-    hero.play().catch(() => {});
+                hero.currentTime = 0;
 
-}
+                hero.playbackRate = 0.95;
+
+                // تأخير بسيط يقلل التهنيج
+                setTimeout(() => {
+
+                    hero.play().catch(() => {});
+
+                }, 400);
+
+            }
+
             // أول سيكشن يظهر
             document
                 .querySelectorAll(
@@ -792,15 +811,64 @@
                     observer.observe(el)
                 );
 
-            // يبدأ السكرول بعد ثواني
-            setTimeout(() => {
-
-                startAutoScroll();
-
-            }, 1000);
+            // يبدأ السكرول
+            startAutoScroll();
 
         };
     }
+
+    /* ══ إيقاف فيديو الهيرو خارج الشاشة ══ */
+
+    let heroTicking = false;
+
+    window.addEventListener('scroll', () => {
+
+        if(heroTicking) return;
+
+        heroTicking = true;
+
+        requestAnimationFrame(() => {
+
+            const hero =
+                document.getElementById(
+                    "heroVideo"
+                );
+
+            if(hero){
+
+                const rect =
+                    hero.getBoundingClientRect();
+
+                const visible =
+                    rect.bottom > 0 &&
+                    rect.top < window.innerHeight;
+
+                if(visible){
+
+                    if(hero.paused){
+
+                        hero.play()
+                            .catch(() => {});
+
+                    }
+
+                } else {
+
+                    if(!hero.paused){
+
+                        hero.pause();
+
+                    }
+
+                }
+
+            }
+
+            heroTicking = false;
+
+        });
+
+    }, { passive:true });
 
     /* ══ SCROLL REVEAL ══ */
 
@@ -841,6 +909,7 @@
             t.classList.remove('show');
 
         }, 3500);
+
     }
 
 </script>
