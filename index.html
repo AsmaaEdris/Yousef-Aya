@@ -540,376 +540,173 @@
 
   <script>
 
-    /* ══ PETALS ══ */
-    (function(){
+  /* ══ PETALS ══ */
+(function() {
+    const items = ['🌸', '🌷', '🌹'];
+    const count = window.innerWidth < 768 ? 5 : 18;
 
-        const items = ['🌸','🌷','🌹'];
-
-        // أخف للموبايل
-        const count = window.innerWidth < 768 ? 5 : 18;
-
-        for(let i = 0; i < count; i++){
-
-            const el = document.createElement('div');
-
-            el.className = 'petal';
-
-            el.textContent = items[i % 3];
-
-            el.style.cssText = `
-                left:${Math.random()*100}%;
-                font-size:${9 + Math.random()*9}px;
-                animation-duration:${11 + Math.random()*12}s;
-                animation-delay:${Math.random()*16}s;
-                will-change: transform;
-            `;
-
-            document.body.appendChild(el);
-        }
-
-    })();
-
-    /* ══ COUNTDOWN ══ */
-
-    function tick(){
-
-        const target =
-            new Date('2026-06-20T19:00:00').getTime();
-
-        const now = new Date().getTime();
-
-        const diff = target - now;
-
-        if(diff < 0) return;
-
-        const pad = v =>
-            String(v).padStart(2,'0');
-
-        const d = pad(
-            Math.floor(diff / (1000 * 60 * 60 * 24))
-        );
-
-        const h = pad(
-            Math.floor(
-                (diff % (1000 * 60 * 60 * 24))
-                / (1000 * 60 * 60)
-            )
-        );
-
-        const m = pad(
-            Math.floor(
-                (diff % (1000 * 60 * 60))
-                / (1000 * 60)
-            )
-        );
-
-        const s = pad(
-            Math.floor(
-                (diff % (1000 * 60))
-                / 1000
-            )
-        );
-
-        const els = {
-            'wlD': d,
-            'wlH': h,
-            'wlM': m,
-            'wlS': s
-        };
-
-        for(let id in els){
-
-            const el =
-                document.getElementById(id);
-
-            if(el){
-                el.textContent = els[id];
-            }
-
-        }
+    for (let i = 0; i < count; i++) {
+        const el = document.createElement('div');
+        el.className = 'petal';
+        el.textContent = items[i % 3];
+        el.style.cssText = `
+            left:${Math.random()*100}%;
+            font-size:${9 + Math.random()*9}px;
+            animation-duration:${11 + Math.random()*12}s;
+            animation-delay:${Math.random()*16}s;
+            will-change: transform;
+        `;
+        document.body.appendChild(el);
     }
+})();
 
-    setInterval(tick, 1000);
+/* ══ COUNTDOWN ══ */
+function tick() {
+    const target = new Date('2026-06-20T19:00:00').getTime();
+    const now = new Date().getTime();
+    const diff = target - now;
 
-    tick();
+    if (diff < 0) return;
 
-    /* ══ AUTO SCROLL ══ */
+    const pad = v => String(v).padStart(2, '0');
+    const d = pad(Math.floor(diff / (1000 * 60 * 60 * 24)));
+    const h = pad(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+    const m = pad(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+    const s = pad(Math.floor((diff % (1000 * 60)) / 1000));
 
-    let autoScrolling = false;
+    const els = { 'wlD': d, 'wlH': h, 'wlM': m, 'wlS': s };
+    for (let id in els) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = els[id];
+    }
+}
+setInterval(tick, 1000);
+tick();
 
-    let autoScrollPaused = false;
+/* ══ OPTIMIZED AUTO SCROLL (The Smooth Version) ══ */
+let autoScrolling = false;
+let autoScrollPaused = false;
+let scrollRequest; // لتخزين معرف الـ Animation Frame
 
-    let autoScrollInterval = null;
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+// تقليل السرعة: في الموبايل 0.8 وفي الديسكتوب 1.2 (يمكنك تعديل هذه الأرقام)
+const scrollSpeed = isMobile ? 0.8 : 1.2;
 
-    function startAutoScroll(){
+function performScroll() {
+    if (autoScrolling) {
+        if (!autoScrollPaused) {
+            window.scrollBy(0, scrollSpeed);
+        }
 
-        if(autoScrolling) return;
+        // التحقق من الوصول لنهاية الصفحة
+        const isEnd = (window.innerHeight + window.scrollY) >= (document.body.scrollHeight - 5);
+        
+        if (isEnd) {
+            autoScrolling = false;
+            cancelAnimationFrame(scrollRequest);
+            return;
+        }
 
-        autoScrolling = true;
+        scrollRequest = requestAnimationFrame(performScroll);
+    }
+}
 
+function startAutoScroll() {
+    if (autoScrolling) return;
+    autoScrolling = true;
+    autoScrollPaused = false;
+    scrollRequest = requestAnimationFrame(performScroll);
+}
+
+/* ══ PAUSE ON MANUAL INTERACTION ══ */
+let scrollTimeout;
+function pauseAutoScrollTemporarily() {
+    autoScrollPaused = true;
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
         autoScrollPaused = false;
+    }, 1500); // العودة للسكرول التلقائي بعد ثانية ونصف من التوقف
+}
 
-        const isMobile =
-            /Android|iPhone|iPad|iPod/i
-            .test(navigator.userAgent);
+window.addEventListener("touchstart", pauseAutoScrollTemporarily, { passive: true });
+window.addEventListener("wheel", pauseAutoScrollTemporarily, { passive: true });
+window.addEventListener("mousedown", pauseAutoScrollTemporarily);
 
-        // سرعة أنعم
-const speed = isMobile ? 2.2 : 2;
-        autoScrollInterval = setInterval(() => {
+/* ══ ENVELOPE OPEN ══ */
+let envelopeOpened = false;
+function openEnvelope() {
+    if (envelopeOpened) return;
+    envelopeOpened = true;
 
-            if(!autoScrolling){
+    const screen = document.getElementById('env-screen');
+    const video = document.getElementById('envVideo');
+    const music = document.getElementById('bgMusic');
+    const hero = document.getElementById("heroVideo");
+    const invitation = document.getElementById('invitation');
 
-                clearInterval(autoScrollInterval);
+    screen.classList.add('tapped');
+    video.play().catch(() => {});
 
-                return;
+    video.onended = function() {
+        screen.classList.add('hide');
+        invitation.classList.add('show');
+        music.volume = 0.4; // خفضت الصوت قليلاً للراحة
+        music.play().catch(() => {});
+
+        if (hero) {
+            hero.muted = true;
+            hero.play().catch(() => {});
+        }
+
+        // إظهار سيكشن الـ Hero أولاً
+        document.querySelectorAll('.s-savedate .reveal').forEach(el => el.classList.add('visible'));
+
+        // مراقبة بقية العناصر أثناء السكرول
+        document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
+
+        // بدء السكرول التلقائي النظيف
+        setTimeout(startAutoScroll, 500); 
+    };
+}
+
+/* ══ HERO VIDEO PERFORMANCE ══ */
+let heroTicking = false;
+window.addEventListener('scroll', () => {
+    if (heroTicking) return;
+    heroTicking = true;
+
+    requestAnimationFrame(() => {
+        const hero = document.getElementById("heroVideo");
+        if (hero) {
+            const rect = hero.getBoundingClientRect();
+            const isVisible = rect.bottom > 0 && rect.top < window.innerHeight;
+            if (isVisible) {
+                if (hero.paused) hero.play().catch(() => {});
+            } else {
+                if (!hero.paused) hero.pause();
             }
-
-            if(!autoScrollPaused){
-
-                window.scrollBy(0, speed);
-
-            }
-
-            // نهاية الصفحة
-            if(
-                (window.innerHeight + window.scrollY)
-                >= document.body.scrollHeight - 5
-            ){
-
-                clearInterval(autoScrollInterval);
-
-                autoScrolling = false;
-
-            }
-
-        }, 20);
-
-    }
-
-    /* ══ PAUSE ON MANUAL SCROLL ══ */
-
-    let scrollTimeout;
-
-    function pauseAutoScrollTemporarily(){
-
-        autoScrollPaused = true;
-
-        clearTimeout(scrollTimeout);
-
-        scrollTimeout = setTimeout(() => {
-
-            autoScrollPaused = false;
-
-        }, 1200);
-
-    }
-
-    window.addEventListener(
-        "touchstart",
-        pauseAutoScrollTemporarily,
-        { passive: true }
-    );
-
-    window.addEventListener(
-        "wheel",
-        pauseAutoScrollTemporarily,
-        { passive: true }
-    );
-
-    window.addEventListener(
-        "mousedown",
-        pauseAutoScrollTemporarily
-    );
-
-    /* ══ ENVELOPE OPEN ══ */
-
-    let envelopeOpened = false;
-
-    function openEnvelope(){
-
-        if(envelopeOpened) return;
-
-        envelopeOpened = true;
-
-        const screen =
-            document.getElementById('env-screen');
-
-        const video =
-            document.getElementById('envVideo');
-
-        const music =
-            document.getElementById('bgMusic');
-
-        const hero =
-            document.getElementById("heroVideo");
-
-        const invitation =
-            document.getElementById('invitation');
-
-        screen.classList.add('tapped');
-
-        video.play().catch(() => {});
-
-        video.onended = function(){
-
-            screen.classList.add('hide');
-
-            invitation.classList.add('show');
-
-            music.volume = 0.5;
-
-            music.play().catch(() => {});
-
-            // تشغيل الهيرو بهدوء
-            if(hero){
-
-                hero.muted = true;
-
-                hero.playsInline = true;
-
-                hero.preload = "metadata";
-
-                hero.setAttribute(
-                    "playsinline",
-                    ""
-                );
-
-                hero.setAttribute(
-                    "webkit-playsinline",
-                    ""
-                );
-
-                hero.currentTime = 0;
-
-                hero.playbackRate = 0.95;
-
-                // تأخير بسيط يقلل التهنيج
-                setTimeout(() => {
-
-                    hero.play().catch(() => {});
-
-                }, 400);
-
-            }
-
-            // أول سيكشن يظهر
-            document
-                .querySelectorAll(
-                    '.s-savedate .reveal'
-                )
-                .forEach(el =>
-                    el.classList.add('visible')
-                );
-
-            // الباقي
-            document
-                .querySelectorAll(
-                    '.reveal:not(.visible)'
-                )
-                .forEach(el =>
-                    observer.observe(el)
-                );
-
-            // يبدأ السكرول
-            startAutoScroll();
-
-        };
-    }
-
-    /* ══ إيقاف فيديو الهيرو خارج الشاشة ══ */
-
-    let heroTicking = false;
-
-    window.addEventListener('scroll', () => {
-
-        if(heroTicking) return;
-
-        heroTicking = true;
-
-        requestAnimationFrame(() => {
-
-            const hero =
-                document.getElementById(
-                    "heroVideo"
-                );
-
-            if(hero){
-
-                const rect =
-                    hero.getBoundingClientRect();
-
-                const visible =
-                    rect.bottom > 0 &&
-                    rect.top < window.innerHeight;
-
-                if(visible){
-
-                    if(hero.paused){
-
-                        hero.play()
-                            .catch(() => {});
-
-                    }
-
-                } else {
-
-                    if(!hero.paused){
-
-                        hero.pause();
-
-                    }
-
-                }
-
-            }
-
-            heroTicking = false;
-
-        });
-
-    }, { passive:true });
-
-    /* ══ SCROLL REVEAL ══ */
-
-    const observer =
-        new IntersectionObserver(entries => {
-
-            entries.forEach(e => {
-
-                if(e.isIntersecting){
-
-                    e.target
-                        .classList
-                        .add('visible');
-
-                    observer.unobserve(e.target);
-
-                }
-
-            });
-
-        }, {
-            threshold: 0.1
-        });
-
-    /* ══ TOAST ══ */
-
-    function showToast(msg){
-
-        const t =
-            document.getElementById('toast');
-
-        t.textContent = msg;
-
-        t.classList.add('show');
-
-        setTimeout(() => {
-
-            t.classList.remove('show');
-
-        }, 3500);
-
-    }
+        }
+        heroTicking = false;
+    });
+}, { passive: true });
+
+/* ══ SCROLL REVEAL ══ */
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            observer.unobserve(e.target);
+        }
+    });
+}, { threshold: 0.1 });
+
+/* ══ TOAST ══ */
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
 
 </script>
 </body></html>
