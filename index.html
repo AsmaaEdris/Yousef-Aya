@@ -535,55 +535,60 @@
     /* ══ PETALS ══ */
     (function(){
         const items=['🌸','🌷','🌹'];
+        const fragment = document.createDocumentFragment(); // استخدام Fragment لتحسين الأداء
         for(let i=0;i<18;i++){
             const el=document.createElement('div');
             el.className='petal';
             el.textContent=items[i%3];
             el.style.cssText=`left:${Math.random()*100}%;font-size:${9+Math.random()*9}px;animation-duration:${11+Math.random()*12}s;animation-delay:${Math.random()*16}s`;
-            document.body.appendChild(el);
+            fragment.appendChild(el);
         }
+        document.body.appendChild(fragment);
     })();
 
     /* ══ COUNTDOWN ══ */
     function tick(){
         const target = new Date('2026-06-20T19:00:00').getTime();
-        const now = new Date().getTime();
+        const now = Date.now(); // أسرع من new Date().getTime()
         const diff = target - now;
 
         if(diff < 0) return;
 
         const pad = v => String(v).padStart(2,'0');
-        const d = pad(Math.floor(diff / (1000 * 60 * 60 * 24)));
-        const h = pad(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
-        const m = pad(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
-        const s = pad(Math.floor((diff % (1000 * 60)) / 1000));
+        const d = pad(Math.floor(diff / 86400000));
+        const h = pad(Math.floor((diff % 86400000) / 3600000));
+        const m = pad(Math.floor((diff % 3600000) / 60000));
+        const s = pad(Math.floor((diff % 60000) / 1000));
 
         const els = {'wlD':d, 'wlH':h, 'wlM':m, 'wlS':s};
         for(let id in els) {
             const el = document.getElementById(id);
-            if(el) el.textContent = els[id];
+            if(el && el.textContent !== els[id]) el.textContent = els[id]; // تحديث فقط لو القيمة اتغيرت
         }
     }
     setInterval(tick, 1000); tick();
 
-    /* ══ AUTO SCROLL ══ */
+    /* ══ AUTO SCROLL (OPTIMIZED) ══ */
     let autoScrolling = false;
     let autoScrollPaused = false;
+    let currentScrollY = window.scrollY; // تخزين القيمة الحالية لتجنب التقطيع
 
     function startAutoScroll() {
         if (autoScrolling) return;
-
         autoScrolling = true;
-        autoScrollPaused = false;
+        currentScrollY = window.scrollY;
 
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const speed = isMobile ? 3.5 : 2.2;
+        const speed = isMobile ? 0.8 : 0.6; // السرعة البطيئة اللي طلبتها
 
         function step() {
             if (!autoScrolling) return;
 
             if (!autoScrollPaused) {
-                window.scrollBy(0, speed);
+                currentScrollY += speed;
+                window.scrollTo(0, currentScrollY); // scrollTo أدق من scrollBy في الأنميشن
+            } else {
+                currentScrollY = window.scrollY; // مزامنة المكان لو المستخدم حرك ايده
             }
 
             if ((window.innerHeight + window.scrollY) >= document.body.scrollHeight - 5) {
@@ -593,7 +598,6 @@
 
             requestAnimationFrame(step);
         }
-
         requestAnimationFrame(step);
     }
 
@@ -602,6 +606,7 @@
         autoScrollPaused = true;
         clearTimeout(scrollTimeout);
         scrollTimeout = setTimeout(() => {
+            currentScrollY = window.scrollY; // تحديث المكان قبل الاستكمال
             autoScrollPaused = false;
         }, 1200);
     }
@@ -632,14 +637,9 @@
             music.volume = 0.5;
             music.play().catch(() => {});
             
-            if(hero) {
-                hero.play().catch(() => {});
-            }
+            if(hero) hero.play().catch(() => {});
 
-            // استدعاء دالة السكرول التلقائي بعد فتح الظرف
-            setTimeout(() => {
-                startAutoScroll();
-            }, 1000);
+            setTimeout(startAutoScroll, 1000);
 
             document.querySelectorAll('.s-savedate .reveal').forEach(el => el.classList.add('visible'));
             document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
@@ -658,9 +658,11 @@
 
     function showToast(msg){
         const t=document.getElementById('toast');
-        t.textContent=msg;
-        t.classList.add('show');
-        setTimeout(()=>t.classList.remove('show'),3500);
+        if(t){
+            t.textContent=msg;
+            t.classList.add('show');
+            setTimeout(()=>t.classList.remove('show'),3500);
+        }
     }
 </script>
 </body></html>
