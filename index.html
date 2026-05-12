@@ -36,7 +36,12 @@
             }
             *{margin:0;padding:0;box-sizing:border-box}
             html,body{width:100%;overflow-x:hidden;
-   scroll-behavior:auto;
+  scroll-snap-type: none !important;
+    scroll-behavior: auto !important;
+}
+section {
+    /* التأكد أن السكاشن لا تمنع السكرول */
+    overflow: visible !important;
 }
 .reveal{
    will-change: transform, opacity;
@@ -540,376 +545,178 @@
 
   <script>
 
-    /* ══ PETALS ══ */
-    (function(){
+    /* ══════════════════════════════════════════════════════
+    GLOBAL VARIABLES & CONFIGURATION
+══════════════════════════════════════════════════════ */
+let autoScrollActive = false;
+let scrollControl;
+let resumeTimeout;
+let envelopeOpened = false;
 
-        const items = ['🌸','🌷','🌹'];
+// إعداد السرعة: 2.0 مناسبة جداً (زوديها لـ 2.5 لو عايزة أسرع)
+const scrollSpeed = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? 2.0 : 1;
 
-        // أخف للموبايل
-        const count = window.innerWidth < 768 ? 5 : 18;
+/* ══════════════════════════════════════════════════════
+    AUTO SCROLL ENGINE (THE "TANK" MODE)
+══════════════════════════════════════════════════════ */
+function startAutoScroll() {
+    if (autoScrollActive) return;
+    autoScrollActive = true;
 
-        for(let i = 0; i < count; i++){
+    function step() {
+        if (!autoScrollActive) return;
 
-            const el = document.createElement('div');
+        // دفع الصفحة لأسفل بسلاسة فائقة
+        window.scrollBy(0, scrollSpeed);
 
-            el.className = 'petal';
+        // التوقف فقط عند الوصول لنهاية الصفحة تماماً
+        const isAtBottom = (window.innerHeight + window.pageYOffset) >= document.body.scrollHeight - 2;
 
-            el.textContent = items[i % 3];
-
-            el.style.cssText = `
-                left:${Math.random()*100}%;
-                font-size:${9 + Math.random()*9}px;
-                animation-duration:${11 + Math.random()*12}s;
-                animation-delay:${Math.random()*16}s;
-                will-change: transform;
-            `;
-
-            document.body.appendChild(el);
-        }
-
-    })();
-
-    /* ══ COUNTDOWN ══ */
-
-    function tick(){
-
-        const target =
-            new Date('2026-06-20T19:00:00').getTime();
-
-        const now = new Date().getTime();
-
-        const diff = target - now;
-
-        if(diff < 0) return;
-
-        const pad = v =>
-            String(v).padStart(2,'0');
-
-        const d = pad(
-            Math.floor(diff / (1000 * 60 * 60 * 24))
-        );
-
-        const h = pad(
-            Math.floor(
-                (diff % (1000 * 60 * 60 * 24))
-                / (1000 * 60 * 60)
-            )
-        );
-
-        const m = pad(
-            Math.floor(
-                (diff % (1000 * 60 * 60))
-                / (1000 * 60)
-            )
-        );
-
-        const s = pad(
-            Math.floor(
-                (diff % (1000 * 60))
-                / 1000
-            )
-        );
-
-        const els = {
-            'wlD': d,
-            'wlH': h,
-            'wlM': m,
-            'wlS': s
-        };
-
-        for(let id in els){
-
-            const el =
-                document.getElementById(id);
-
-            if(el){
-                el.textContent = els[id];
-            }
-
+        if (isAtBottom) {
+            autoScrollActive = false;
+        } else {
+            scrollControl = requestAnimationFrame(step);
         }
     }
+    scrollControl = requestAnimationFrame(step);
+}
 
-    setInterval(tick, 1000);
+function stopAutoScroll() {
+    autoScrollActive = false;
+    cancelAnimationFrame(scrollControl);
+    clearTimeout(resumeTimeout);
+}
 
-    tick();
+// وظيفة التعامل مع لمسة الإيد
+function handleUserInteraction() {
+    if (!envelopeOpened) return; // لا يعمل السكرول إلا بعد فتح المغلف
+    
+    stopAutoScroll(); // وقف الكود فوراً عشان يسيب ليدك الحرية
 
-    /* ══ AUTO SCROLL ══ */
+    // يرجع يشتغل لوحده بعد ثانية واحدة (1000ms) من توقف يدك
+    resumeTimeout = setTimeout(() => {
+        startAutoScroll();
+    }, 1000);
+}
 
-    let autoScrolling = false;
+/* ══════════════════════════════════════════════════════
+    EVENT LISTENERS FOR USER FREEDOM
+══════════════════════════════════════════════════════ */
+window.addEventListener('touchstart', handleUserInteraction, { passive: true });
+window.addEventListener('wheel', handleUserInteraction, { passive: true });
+window.addEventListener('mousedown', handleUserInteraction, { passive: true });
 
-    let autoScrollPaused = false;
+/* ══════════════════════════════════════════════════════
+    PETALS ANIMATION (FLOWERS)
+══════════════════════════════════════════════════════ */
+(function(){
+    const items = ['🌸','🌷','🌹'];
+    const count = window.innerWidth < 768 ? 8 : 18;
 
-    let autoScrollInterval = null;
-
-    function startAutoScroll(){
-
-        if(autoScrolling) return;
-
-        autoScrolling = true;
-
-        autoScrollPaused = false;
-
-        const isMobile =
-            /Android|iPhone|iPad|iPod/i
-            .test(navigator.userAgent);
-
-        // سرعة أنعم
-const speed = isMobile ? 2.2 : 2;
-        autoScrollInterval = setInterval(() => {
-
-            if(!autoScrolling){
-
-                clearInterval(autoScrollInterval);
-
-                return;
-            }
-
-            if(!autoScrollPaused){
-
-                window.scrollBy(0, speed);
-
-            }
-
-            // نهاية الصفحة
-            if(
-                (window.innerHeight + window.scrollY)
-                >= document.body.scrollHeight - 5
-            ){
-
-                clearInterval(autoScrollInterval);
-
-                autoScrolling = false;
-
-            }
-
-        }, 20);
-
+    for(let i = 0; i < count; i++){
+        const el = document.createElement('div');
+        el.className = 'petal';
+        el.textContent = items[i % 3];
+        el.style.cssText = `
+            left:${Math.random()*100}%;
+            font-size:${9 + Math.random()*9}px;
+            animation-duration:${11 + Math.random()*12}s;
+            animation-delay:${Math.random()*16}s;
+            will-change: transform;
+        `;
+        document.body.appendChild(el);
     }
+})();
 
-    /* ══ PAUSE ON MANUAL SCROLL ══ */
+/* ══════════════════════════════════════════════════════
+    COUNTDOWN TIMER
+══════════════════════════════════════════════════════ */
+function tick(){
+    const target = new Date('2026-06-20T19:00:00').getTime();
+    const now = new Date().getTime();
+    const diff = target - now;
 
-    let scrollTimeout;
+    if(diff < 0) return;
 
-    function pauseAutoScrollTemporarily(){
+    const pad = v => String(v).padStart(2,'0');
+    const d = pad(Math.floor(diff / (1000 * 60 * 60 * 24)));
+    const h = pad(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
+    const m = pad(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+    const s = pad(Math.floor((diff % (1000 * 60)) / 1000));
 
-        autoScrollPaused = true;
-
-        clearTimeout(scrollTimeout);
-
-        scrollTimeout = setTimeout(() => {
-
-            autoScrollPaused = false;
-
-        }, 1200);
-
+    const els = {'wlD': d, 'wlH': h, 'wlM': m, 'wlS': s};
+    for(let id in els){
+        const el = document.getElementById(id);
+        if(el) el.textContent = els[id];
     }
+}
+setInterval(tick, 1000);
+tick();
 
-    window.addEventListener(
-        "touchstart",
-        pauseAutoScrollTemporarily,
-        { passive: true }
-    );
+/* ══════════════════════════════════════════════════════
+    ENVELOPE OPENING LOGIC
+══════════════════════════════════════════════════════ */
+function openEnvelope(){
+    if(envelopeOpened) return;
+    envelopeOpened = true;
 
-    window.addEventListener(
-        "wheel",
-        pauseAutoScrollTemporarily,
-        { passive: true }
-    );
+    const screen = document.getElementById('env-screen');
+    const video = document.getElementById('envVideo');
+    const music = document.getElementById('bgMusic');
+    const hero = document.getElementById("heroVideo");
+    const invitation = document.getElementById('invitation');
 
-    window.addEventListener(
-        "mousedown",
-        pauseAutoScrollTemporarily
-    );
+    screen.classList.add('tapped');
+    video.play().catch(() => {});
 
-    /* ══ ENVELOPE OPEN ══ */
+    video.onended = function(){
+        screen.classList.add('hide');
+        invitation.classList.add('show');
 
-    let envelopeOpened = false;
+        // تشغيل الموسيقى
+        music.volume = 0.5;
+        music.play().catch(() => {});
 
-    function openEnvelope(){
+        // تشغيل فيديو الهيرو
+        if(hero){
+            hero.play().catch(() => {});
+        }
 
-        if(envelopeOpened) return;
+        // إظهار السكاشن (Reveal)
+        document.querySelectorAll('.s-savedate .reveal').forEach(el => el.classList.add('visible'));
 
-        envelopeOpened = true;
-
-        const screen =
-            document.getElementById('env-screen');
-
-        const video =
-            document.getElementById('envVideo');
-
-        const music =
-            document.getElementById('bgMusic');
-
-        const hero =
-            document.getElementById("heroVideo");
-
-        const invitation =
-            document.getElementById('invitation');
-
-        screen.classList.add('tapped');
-
-        video.play().catch(() => {});
-
-        video.onended = function(){
-
-            screen.classList.add('hide');
-
-            invitation.classList.add('show');
-
-            music.volume = 0.5;
-
-            music.play().catch(() => {});
-
-            // تشغيل الهيرو بهدوء
-            if(hero){
-
-                hero.muted = true;
-
-                hero.playsInline = true;
-
-                hero.preload = "metadata";
-
-                hero.setAttribute(
-                    "playsinline",
-                    ""
-                );
-
-                hero.setAttribute(
-                    "webkit-playsinline",
-                    ""
-                );
-
-                hero.currentTime = 0;
-
-                hero.playbackRate = 0.95;
-
-                // تأخير بسيط يقلل التهنيج
-                setTimeout(() => {
-
-                    hero.play().catch(() => {});
-
-                }, 400);
-
-            }
-
-            // أول سيكشن يظهر
-            document
-                .querySelectorAll(
-                    '.s-savedate .reveal'
-                )
-                .forEach(el =>
-                    el.classList.add('visible')
-                );
-
-            // الباقي
-            document
-                .querySelectorAll(
-                    '.reveal:not(.visible)'
-                )
-                .forEach(el =>
-                    observer.observe(el)
-                );
-
-            // يبدأ السكرول
-            startAutoScroll();
-
-        };
-    }
-
-    /* ══ إيقاف فيديو الهيرو خارج الشاشة ══ */
-
-    let heroTicking = false;
-
-    window.addEventListener('scroll', () => {
-
-        if(heroTicking) return;
-
-        heroTicking = true;
-
-        requestAnimationFrame(() => {
-
-            const hero =
-                document.getElementById(
-                    "heroVideo"
-                );
-
-            if(hero){
-
-                const rect =
-                    hero.getBoundingClientRect();
-
-                const visible =
-                    rect.bottom > 0 &&
-                    rect.top < window.innerHeight;
-
-                if(visible){
-
-                    if(hero.paused){
-
-                        hero.play()
-                            .catch(() => {});
-
-                    }
-
-                } else {
-
-                    if(!hero.paused){
-
-                        hero.pause();
-
-                    }
-
-                }
-
-            }
-
-            heroTicking = false;
-
-        });
-
-    }, { passive:true });
-
-    /* ══ SCROLL REVEAL ══ */
-
-    const observer =
-        new IntersectionObserver(entries => {
-
+        const observer = new IntersectionObserver(entries => {
             entries.forEach(e => {
-
                 if(e.isIntersecting){
-
-                    e.target
-                        .classList
-                        .add('visible');
-
+                    e.target.classList.add('visible');
                     observer.unobserve(e.target);
-
                 }
-
             });
+        }, { threshold: 0.1 });
 
-        }, {
-            threshold: 0.1
-        });
+        document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
 
-    /* ══ TOAST ══ */
+        // بـدايـة الـسـكـرول الـتـلـقـائـي الـقـوي
+        setTimeout(startAutoScroll, 500);
+    };
+}
 
-    function showToast(msg){
-
-        const t =
-            document.getElementById('toast');
-
-        t.textContent = msg;
-
-        t.classList.add('show');
-
-        setTimeout(() => {
-
-            t.classList.remove('show');
-
-        }, 3500);
-
+/* ══════════════════════════════════════════════════════
+    HERO VIDEO SMART PAUSE (PERFORMANCE)
+══════════════════════════════════════════════════════ */
+window.addEventListener('scroll', () => {
+    const hero = document.getElementById("heroVideo");
+    if(!hero) return;
+    
+    const rect = hero.getBoundingClientRect();
+    const visible = rect.bottom > 0 && rect.top < window.innerHeight;
+    
+    if(visible) {
+        if(hero.paused) hero.play().catch(() => {});
+    } else {
+        if(!hero.paused) hero.pause();
     }
+}, { passive: true });
 
 </script>
 </body></html>
