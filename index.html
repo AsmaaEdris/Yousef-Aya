@@ -544,36 +544,36 @@ section {
     <div class="toast" id="toast"></div>
 
   <script>
-
-    /* ══════════════════════════════════════════════════════
-    GLOBAL VARIABLES & CONFIGURATION
+/* ══════════════════════════════════════════════════════
+    1. GLOBAL CONFIGURATION & VARIABLES
 ══════════════════════════════════════════════════════ */
+let envelopeOpened = false;
 let autoScrollActive = false;
 let scrollControl;
 let resumeTimeout;
-let envelopeOpened = false;
 
-// إعداد السرعة: 2.0 مناسبة جداً (زوديها لـ 2.5 لو عايزة أسرع)
-const scrollSpeed = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? 2.0 : 1;
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+// سرعة السكرول: يمكنك تعديلها (0.8 هادئة جداً - 1.5 سريعة)
+const scrollSpeed = isMobile ? 0.9 : 1.2;
 
 /* ══════════════════════════════════════════════════════
-    AUTO SCROLL ENGINE (THE "TANK" MODE)
+    2. SMART AUTO SCROLL ENGINE
 ══════════════════════════════════════════════════════ */
 function startAutoScroll() {
-    if (autoScrollActive) return;
+    if (!envelopeOpened || autoScrollActive) return;
     autoScrollActive = true;
 
     function step() {
         if (!autoScrollActive) return;
 
-        // دفع الصفحة لأسفل بسلاسة فائقة
         window.scrollBy(0, scrollSpeed);
 
-        // التوقف فقط عند الوصول لنهاية الصفحة تماماً
-        const isAtBottom = (window.innerHeight + window.pageYOffset) >= document.body.scrollHeight - 2;
-
-        if (isAtBottom) {
+        // التحقق من الوصول للنهاية
+        const isEnd = (window.innerHeight + window.pageYOffset) >= (document.body.scrollHeight - 5);
+        
+        if (isEnd) {
             autoScrollActive = false;
+            cancelAnimationFrame(scrollControl);
         } else {
             scrollControl = requestAnimationFrame(step);
         }
@@ -587,41 +587,34 @@ function stopAutoScroll() {
     clearTimeout(resumeTimeout);
 }
 
-// وظيفة التعامل مع لمسة الإيد
+// التحكم باليد: يوقف السكرول فوراً ويعيده بعد ثانية ونصف من التوقف
 function handleUserInteraction() {
-    if (!envelopeOpened) return; // لا يعمل السكرول إلا بعد فتح المغلف
-    
-    stopAutoScroll(); // وقف الكود فوراً عشان يسيب ليدك الحرية
-
-    // يرجع يشتغل لوحده بعد ثانية واحدة (1000ms) من توقف يدك
+    if (!envelopeOpened) return;
+    stopAutoScroll();
     resumeTimeout = setTimeout(() => {
         startAutoScroll();
-    }, 1000);
+    }, 1500); 
 }
 
-/* ══════════════════════════════════════════════════════
-    EVENT LISTENERS FOR USER FREEDOM
-══════════════════════════════════════════════════════ */
-window.addEventListener('touchstart', handleUserInteraction, { passive: true });
-window.addEventListener('wheel', handleUserInteraction, { passive: true });
-window.addEventListener('mousedown', handleUserInteraction, { passive: true });
+window.addEventListener("touchstart", handleUserInteraction, { passive: true });
+window.addEventListener("wheel", handleUserInteraction, { passive: true });
+window.addEventListener("mousedown", handleUserInteraction, { passive: true });
 
 /* ══════════════════════════════════════════════════════
-    PETALS ANIMATION (FLOWERS)
+    3. FLOWERS / PETALS ANIMATION
 ══════════════════════════════════════════════════════ */
-(function(){
-    const items = ['🌸','🌷','🌹'];
-    const count = window.innerWidth < 768 ? 8 : 18;
-
-    for(let i = 0; i < count; i++){
+(function initPetals() {
+    const items = ['🌸', '🌷', '🌹'];
+    const count = isMobile ? 8 : 18;
+    for (let i = 0; i < count; i++) {
         const el = document.createElement('div');
         el.className = 'petal';
         el.textContent = items[i % 3];
         el.style.cssText = `
-            left:${Math.random()*100}%;
-            font-size:${9 + Math.random()*9}px;
-            animation-duration:${11 + Math.random()*12}s;
-            animation-delay:${Math.random()*16}s;
+            left:${Math.random() * 100}%;
+            font-size:${9 + Math.random() * 9}px;
+            animation-duration:${11 + Math.random() * 12}s;
+            animation-delay:${Math.random() * 16}s;
             will-change: transform;
         `;
         document.body.appendChild(el);
@@ -629,35 +622,44 @@ window.addEventListener('mousedown', handleUserInteraction, { passive: true });
 })();
 
 /* ══════════════════════════════════════════════════════
-    COUNTDOWN TIMER
+    4. COUNTDOWN TIMER
 ══════════════════════════════════════════════════════ */
-function tick(){
+function tick() {
     const target = new Date('2026-06-20T19:00:00').getTime();
     const now = new Date().getTime();
     const diff = target - now;
 
-    if(diff < 0) return;
+    if (diff < 0) return;
 
-    const pad = v => String(v).padStart(2,'0');
+    const pad = v => String(v).padStart(2, '0');
     const d = pad(Math.floor(diff / (1000 * 60 * 60 * 24)));
     const h = pad(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)));
     const m = pad(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
     const s = pad(Math.floor((diff % (1000 * 60)) / 1000));
 
-    const els = {'wlD': d, 'wlH': h, 'wlM': m, 'wlS': s};
-    for(let id in els){
+    const els = { 'wlD': d, 'wlH': h, 'wlM': m, 'wlS': s };
+    for (let id in els) {
         const el = document.getElementById(id);
-        if(el) el.textContent = els[id];
+        if (el) el.textContent = els[id];
     }
 }
 setInterval(tick, 1000);
 tick();
 
 /* ══════════════════════════════════════════════════════
-    ENVELOPE OPENING LOGIC
+    5. ENVELOPE LOGIC & REVEAL
 ══════════════════════════════════════════════════════ */
-function openEnvelope(){
-    if(envelopeOpened) return;
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+        if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            observer.unobserve(e.target);
+        }
+    });
+}, { threshold: 0.1 });
+
+function openEnvelope() {
+    if (envelopeOpened) return;
     envelopeOpened = true;
 
     const screen = document.getElementById('env-screen');
@@ -669,54 +671,52 @@ function openEnvelope(){
     screen.classList.add('tapped');
     video.play().catch(() => {});
 
-    video.onended = function(){
+    video.onended = function() {
         screen.classList.add('hide');
         invitation.classList.add('show');
-
-        // تشغيل الموسيقى
-        music.volume = 0.5;
+        
+        music.volume = 0.4;
         music.play().catch(() => {});
 
-        // تشغيل فيديو الهيرو
-        if(hero){
+        if (hero) {
+            hero.muted = true;
             hero.play().catch(() => {});
         }
 
-        // إظهار السكاشن (Reveal)
-        document.querySelectorAll('.s-savedate .reveal').forEach(el => el.classList.add('visible'));
-
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(e => {
-                if(e.isIntersecting){
-                    e.target.classList.add('visible');
-                    observer.unobserve(e.target);
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.reveal:not(.visible)').forEach(el => observer.observe(el));
-
-        // بـدايـة الـسـكـرول الـتـلـقـائـي الـقـوي
+        // إظهار العناصر المخفية
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        
+        // تشغيل السكرول التلقائي بعد انتهاء الفيديو بـ نصف ثانية
         setTimeout(startAutoScroll, 500);
     };
 }
 
 /* ══════════════════════════════════════════════════════
-    HERO VIDEO SMART PAUSE (PERFORMANCE)
+    6. PERFORMANCE: HERO VIDEO PAUSE
 ══════════════════════════════════════════════════════ */
 window.addEventListener('scroll', () => {
     const hero = document.getElementById("heroVideo");
-    if(!hero) return;
+    if (!hero) return;
     
     const rect = hero.getBoundingClientRect();
-    const visible = rect.bottom > 0 && rect.top < window.innerHeight;
+    const isVisible = rect.bottom > 0 && rect.top < window.innerHeight;
     
-    if(visible) {
-        if(hero.paused) hero.play().catch(() => {});
+    if (isVisible) {
+        if (hero.paused) hero.play().catch(() => {});
     } else {
-        if(!hero.paused) hero.pause();
+        if (!hero.paused) hero.pause();
     }
 }, { passive: true });
 
+/* ══════════════════════════════════════════════════════
+    7. UTILS
+══════════════════════════════════════════════════════ */
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    if(!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
 </script>
 </body></html>
