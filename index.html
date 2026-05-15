@@ -448,7 +448,7 @@ section {
             <div class="wl-separator reveal">
                 <svg viewBox="0 0 200 24" fill="none"><line x1="0" y1="12" x2="80" y2="12" stroke="#c4a97a" stroke-width="0.5"></line><circle cx="100" cy="12" r="4" stroke="#c4a97a" stroke-width="0.5"></circle><circle cx="88" cy="12" r="2" stroke="#c4a97a" stroke-width="0.5"></circle><circle cx="112" cy="12" r="2" stroke="#c4a97a" stroke-width="0.5"></circle><line x1="120" y1="12" x2="200" y2="12" stroke="#c4a97a" stroke-width="0.5"></line><circle cx="100" cy="12" r="1.5" fill="#c4a97a"></circle></svg>
             </div>
-            <div class="wl-title reveal">Welcome!</div>
+            <div class="wl-title reveal">!Welcome</div>
             <div class="wl-body reveal">
                 يسعدنا أن ندعوكم لمشاركتنا فرحة بداية رحلتنا معًا إلى الأبد. هنا ستجدون كل ما تحتاجونه عن يومنا المميز.
             </div>
@@ -538,7 +538,12 @@ section {
         </a>
     </div>
 </section>
-
+ <footer class="inv-footer">
+            <div class="inv-footer-text">
+                Create a similar digital invitation for your wedding ✨
+                <a href="https://wa.me/0201144064313" target="_blank">WhatsApp: 01144064313</a>
+            </div>
+        </footer>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -554,51 +559,49 @@ let resumeTimeout;
 
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 // سرعة السكرول: يمكنك تعديلها (0.8 هادئة جداً - 1.5 سريعة)
-const scrollSpeed = isMobile ? 0.9 : .9;
+const scrollSpeed = isMobile ? 0.9 : 1.1;
 
 /* ══════════════════════════════════════════════════════
     2. SMART AUTO SCROLL ENGINE
 ══════════════════════════════════════════════════════ */
-function startAutoScroll() {
-    if (!envelopeOpened || autoScrollActive) return;
-    autoScrollActive = true;
+  function startAutoScroll() {
+        if (!envelopeOpened || autoScrollActive) return;
+        autoScrollActive = true;
 
-    function step() {
-        if (!autoScrollActive) return;
+        function step() {
+            if (!autoScrollActive) return;
 
-        window.scrollBy(0, scrollSpeed);
+            window.scrollBy(0, scrollSpeed);
 
-        // التحقق من الوصول للنهاية
-        const isEnd = (window.innerHeight + window.pageYOffset) >= (document.body.scrollHeight - 5);
-        
-        if (isEnd) {
-            autoScrollActive = false;
-            cancelAnimationFrame(scrollControl);
-        } else {
-            scrollControl = requestAnimationFrame(step);
+            const isEnd = (window.innerHeight + window.pageYOffset) >= (document.body.scrollHeight - 5);
+            
+            if (isEnd) {
+                autoScrollActive = false;
+                cancelAnimationFrame(scrollControl);
+            } else {
+                scrollControl = requestAnimationFrame(step);
+            }
         }
+        scrollControl = requestAnimationFrame(step);
     }
-    scrollControl = requestAnimationFrame(step);
-}
 
-function stopAutoScroll() {
-    autoScrollActive = false;
-    cancelAnimationFrame(scrollControl);
-    clearTimeout(resumeTimeout);
-}
+    function stopAutoScroll() {
+        autoScrollActive = false;
+        cancelAnimationFrame(scrollControl);
+        clearTimeout(resumeTimeout);
+    }
 
-// التحكم باليد: يوقف السكرول فوراً ويعيده بعد ثانية ونصف من التوقف
-function handleUserInteraction() {
-    if (!envelopeOpened) return;
-    stopAutoScroll();
-    resumeTimeout = setTimeout(() => {
-        startAutoScroll();
-    }, 1500); 
-}
+    function handleUserInteraction() {
+        if (!envelopeOpened) return;
+        stopAutoScroll();
+        resumeTimeout = setTimeout(() => {
+            startAutoScroll();
+        }, 1500); 
+    }
 
-window.addEventListener("touchstart", handleUserInteraction, { passive: true });
-window.addEventListener("wheel", handleUserInteraction, { passive: true });
-window.addEventListener("mousedown", handleUserInteraction, { passive: true });
+    window.addEventListener("touchstart", handleUserInteraction, { passive: true });
+    window.addEventListener("wheel", handleUserInteraction, { passive: true });
+    window.addEventListener("mousedown", handleUserInteraction, { passive: true });
 
 /* ══════════════════════════════════════════════════════
     3. FLOWERS / PETALS ANIMATION
