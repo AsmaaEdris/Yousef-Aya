@@ -335,8 +335,273 @@ section {
 .inv-footer a:hover{
     opacity:.8;
 }
+.families-royal{
+    position:relative;
+    padding:140px 20px;
+    background:
+    radial-gradient(circle at top, #fffdf8 0%, #f6f1e6 40%, #f2eadc 100%);
+    overflow:hidden;
+    text-align:center;
+}
 
-            /* ══ HIDDEN AUDIO ══ */
+/* زخارف خلفية ناعمة */
+.families-royal::before,
+.families-royal::after{
+    content:"✦";
+    position:absolute;
+    font-size:220px;
+    color:rgba(193,161,98,.06);
+    font-family:serif;
+    pointer-events:none;
+}
+
+.families-royal::before{
+    top:20px;
+    left:40px;
+}
+
+.families-royal::after{
+    bottom:20px;
+    right:40px;
+}
+
+/* العنوان */
+.royal-header{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:28px;
+    margin-bottom:40px;
+}
+
+.royal-header span{
+    width:110px;
+    height:1px;
+    background:linear-gradient(to right,transparent,#c9a86a,transparent);
+    opacity:.9;
+}
+
+.royal-header h2{
+    font-family:'Amiri',serif;
+    font-size:3.2rem;
+    color:#3f3426;
+    margin:0;
+    letter-spacing:4px;
+}
+
+/* النص */
+.royal-text{
+    max-width:750px;
+    margin:auto;
+    color:#7a6a56;
+    line-height:2.4;
+    font-size:1.15rem;
+}
+
+/* الحاوية */
+.families-wrapper{
+    margin-top:95px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:70px;
+}
+
+/* ⭐ كروت الأسماء (المحسّنة) */
+.family-card{
+    width:340px;
+    padding:60px 35px;
+    position:relative;
+
+    background:
+    linear-gradient(145deg,
+    rgba(255,255,255,.85),
+    rgba(255,255,255,.55));
+
+    backdrop-filter: blur(28px);
+
+    border-radius:28px;
+
+    border:1px solid rgba(201,168,106,.25);
+
+    box-shadow:
+    0 30px 70px rgba(0,0,0,.06),
+    inset 0 1px 0 rgba(255,255,255,.6);
+
+    text-align:center;
+
+    transition:.6s cubic-bezier(.2,.8,.2,1);
+
+    overflow:hidden;
+}
+
+.family-card:hover{
+    transform:translateY(-14px) scale(1.03);
+
+    border-color:rgba(201,168,106,.45);
+
+    box-shadow:
+    0 40px 90px rgba(0,0,0,.1),
+    0 10px 25px rgba(201,168,106,.12);
+}
+
+/* glow داخلي ذهبي */
+.card-glow{
+    position:absolute;
+    inset:-40%;
+
+    background:
+    radial-gradient(circle at top,
+    rgba(201,168,106,.18),
+    transparent 55%),
+    radial-gradient(circle at bottom,
+    rgba(201,168,106,.08),
+    transparent 60%);
+
+    transform:rotate(15deg);
+    pointer-events:none;
+}
+
+/* خط زخرفة فوق */
+.family-card::before{
+    content:"";
+    position:absolute;
+    top:18px;
+    left:50%;
+    transform:translateX(-50%);
+
+    width:60px;
+    height:2px;
+
+    background:linear-gradient(to right,transparent,#c9a86a,transparent);
+    opacity:.8;
+}
+
+/* label */
+.family-label{
+    font-size:.85rem;
+    letter-spacing:4px;
+    color:#a98c58;
+    text-transform:uppercase;
+    margin-bottom:18px;
+    position:relative;
+}
+
+.family-label::after{
+    content:"";
+    display:block;
+    width:6px;
+    height:6px;
+    background:#c9a86a;
+    border-radius:50%;
+    margin:10px auto 0;
+}
+
+/* الاسم */
+.family-card h3{
+    font-family:'Lateef',serif;
+    font-size:4.4rem;
+    color:#3f3426;
+    margin:18px 0 0;
+    letter-spacing:.5px;
+}
+
+/* المنتصف */
+.royal-center{
+    display:flex;
+    align-items:center;
+    gap:28px;
+}
+
+.center-line{
+    width:90px;
+    height:1px;
+    background:linear-gradient(to right,transparent,#c9a86a,transparent);
+    opacity:.8;
+}
+
+/* الختم */
+.royal-emblem{
+    width:140px;
+    height:140px;
+    border-radius:50%;
+    background:radial-gradient(circle,#fff,#f7f2ea);
+
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border:1px solid rgba(201,168,106,.25);
+
+    box-shadow:
+    0 25px 70px rgba(201,168,106,.18);
+}
+
+.emblem-ring{
+    position:absolute;
+    inset:12px;
+    border-radius:50%;
+    border:1px dashed rgba(201,168,106,.8);
+    animation:spin 24s linear infinite;
+    opacity:.8;
+}
+
+.royal-emblem span{
+    font-size:2.2rem;
+    color:#c9a86a;
+}
+
+@keyframes spin{
+    from{transform:rotate(0)}
+    to{transform:rotate(360deg)}
+}
+
+/* الرسالة */
+.royal-note{
+    max-width:720px;
+    margin:100px auto 0;
+    padding:40px;
+
+    border-top:1px solid rgba(201,168,106,.25);
+
+    color:#6e5f4d;
+    line-height:2.3;
+    font-size:1.15rem;
+    font-style:italic;
+}
+.couple-icon{
+    width:55px;
+    height:55px;
+    fill:#c9a86a;
+    opacity:.9;
+}
+
+/* موبايل */
+@media(max-width:768px){
+
+    .families-wrapper{
+        flex-direction:column;
+        gap:40px;
+    }
+
+    .center-line{
+        display:none;
+    }
+
+    .family-card{
+        width:100%;
+        max-width:360px;
+    }
+
+    .royal-header h2{
+        font-size:2.3rem;
+    }
+
+    .family-card h3{
+        font-size:3.2rem;
+    }
+}       /* ══ HIDDEN AUDIO ══ */
             #bgMusic{display:none;visibility:hidden;position:absolute;width:0;height:0;pointer-events:none}
     </style>
 </head>
@@ -420,6 +685,56 @@ section {
                 <div class="pearl-invite-text">وذلك بمشيئة الله تعالى</div>
             </div>
         </section>
+<section class="families-royal reveal">
+
+    <div class="royal-header">
+        <span></span>
+        <h2>اتحاد عائلتين</h2>
+        <span></span>
+    </div>
+
+    <p class="royal-text">
+        في أمسيةٍ تتلألأ بالفرح، وتُزهر فيها الأمنيات،
+        يجمع القدر بين عائلتين كريمتين لتبدأ رحلةٌ جديدة
+        عنوانها المحبة والمودة والسكينة.
+    </p>
+
+    <div class="families-wrapper">
+
+        <div class="family-card">
+            <div class="card-glow"></div>
+            <div class="family-label">والد العريس</div>
+            <h3>إدريس حسني</h3>
+        </div>
+
+        <div class="royal-center">
+
+            <div class="center-line"></div>
+
+            <div class="royal-emblem">
+                <div class="emblem-ring"></div>
+                <span>✦</span>
+            </div>
+
+            <div class="center-line"></div>
+
+        </div>
+
+        <div class="family-card">
+            <div class="card-glow"></div>
+            <div class="family-label">والد العروس</div>
+            <h3>عبد الرحمن فكري</h3>
+        </div>
+
+    </div>
+
+    <div class="royal-note">
+        بكل الحب والتقدير تتشرف العائلتان بدعوتكم
+        لمشاركتهم هذه المناسبة السعيدة ومباركة بداية
+        فصل جديد من أجمل الحكايات.
+    </div>
+
+</section>
 
         <!-- 2. WELCOME + COUNTDOWN -->
         <section class="s-welcome">
