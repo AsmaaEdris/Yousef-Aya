@@ -578,30 +578,81 @@ section {
 }
 
 /* موبايل */
-@media(max-width:768px){
-
-    .families-wrapper{
-        flex-direction:column;
-        gap:40px;
+@media(max-width: 768px) {
+    /* 1. زيادة مساحة التنفس في الموبايل */
+    .families-royal {
+        padding: 80px 15px;
     }
 
-    .center-line{
-        display:none;
+    /* 2. تحجيم العنوان بشكل انسيابي */
+    .royal-header h2 {
+        font-size: 1.8rem;
+        letter-spacing: 2px;
     }
 
-    .family-card{
-        width:100%;
-        max-width:360px;
+    .royal-header span {
+        width: 50px;
     }
 
-    .royal-header h2{
-        font-size:2.3rem;
+    /* 3. الكروت: تظهر بشكل أكثر نحافة وأناقة */
+    .families-wrapper {
+        flex-direction: column;
+        gap: 30px;
+        margin-top: 60px;
     }
 
-    .family-card h3{
-        font-size:3.2rem;
+    .family-card {
+        padding: 40px 20px;
+        border-radius: 20px;
+        /* تقليل الحجم قليلاً ليتناسب مع الشاشات الصغيرة */
+        transform: scale(0.95);
     }
-}       /* ══ HIDDEN AUDIO ══ */
+
+    .family-card h3 {
+        font-size: 2.8rem; /* تصغير متوازن للخط */
+        margin: 10px 0;
+    }
+
+    /* 4. الختم في المنتصف: تأثير "تداخل" إبداعي */
+    .royal-center {
+        /* إخفاء الخطوط الجانبية وإظهار الختم كبطل للقسم */
+        order: -1; 
+        margin-bottom: 20px;
+    }
+
+    .center-line {
+        display: none;
+    }
+
+    .royal-emblem {
+        width: 100px;
+        height: 100px;
+        /* إضافة ظل أقوى ليعطي عمق (Depth) */
+        box-shadow: 0 10px 30px rgba(201,168,106,0.25);
+    }
+
+    .royal-emblem span {
+        font-size: 1.5rem;
+    }
+
+    /* 5. الرسالة: جعلها تبدو كأنها "قصيدة" */
+    .royal-note {
+        margin-top: 50px;
+        padding: 20px;
+        font-size: 1rem;
+        line-height: 2;
+    }
+}
+
+/* إضافة لمسة إضافية للشاشات الصغيرة جداً (iPhone SE وأشباهه) */
+@media(max-width: 375px) {
+    .family-card {
+        padding: 30px 15px;
+    }
+    .family-card h3 {
+        font-size: 2.4rem;
+    }
+}     /* ══ HIDDEN AUDIO ══ */
             #bgMusic{display:none;visibility:hidden;position:absolute;width:0;height:0;pointer-events:none}
     </style>
 </head>
@@ -670,19 +721,6 @@ section {
             <div class="pearl-image-wrap">
                 <img class="pearl-bg" src="imgs/hero22.jpg" alt="">
                 <div class="pearl-overlay"></div>
-            </div>
-            <div class="pearl-content">
-                <div class="pearl-ayah">
-                    وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا
-                </div>
-                <div class="pearl-divider"></div>
-                <div class="pearl-invite-text">
-                    بكل الحب والود<br>
-                    نتشرف بدعوتكم لحضور كتب كتاب وحفل زفاف
-                </div>
-                <div class="pearl-names">يوسف &amp; آيه</div>
-                <div class="pearl-divider"></div>
-                <div class="pearl-invite-text">وذلك بمشيئة الله تعالى</div>
             </div>
         </section>
 <section class="families-royal reveal">
