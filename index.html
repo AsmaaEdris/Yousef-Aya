@@ -594,7 +594,6 @@ section {
         width: 50px;
     }
 
-    /* 3. الكروت: تظهر بشكل أكثر نحافة وأناقة */
     .families-wrapper {
         flex-direction: column;
         gap: 30px;
@@ -604,19 +603,15 @@ section {
     .family-card {
         padding: 40px 20px;
         border-radius: 20px;
-        /* تقليل الحجم قليلاً ليتناسب مع الشاشات الصغيرة */
         transform: scale(0.95);
     }
 
     .family-card h3 {
-        font-size: 2.8rem; /* تصغير متوازن للخط */
+        font-size: 2.8rem; 
         margin: 10px 0;
     }
 
-    /* 4. الختم في المنتصف: تأثير "تداخل" إبداعي */
     .royal-center {
-        /* إخفاء الخطوط الجانبية وإظهار الختم كبطل للقسم */
-        order: -1; 
         margin-bottom: 20px;
     }
 
@@ -627,7 +622,6 @@ section {
     .royal-emblem {
         width: 100px;
         height: 100px;
-        /* إضافة ظل أقوى ليعطي عمق (Depth) */
         box-shadow: 0 10px 30px rgba(201,168,106,0.25);
     }
 
@@ -635,7 +629,6 @@ section {
         font-size: 1.5rem;
     }
 
-    /* 5. الرسالة: جعلها تبدو كأنها "قصيدة" */
     .royal-note {
         margin-top: 50px;
         padding: 20px;
@@ -644,7 +637,6 @@ section {
     }
 }
 
-/* إضافة لمسة إضافية للشاشات الصغيرة جداً (iPhone SE وأشباهه) */
 @media(max-width: 375px) {
     .family-card {
         padding: 30px 15px;
